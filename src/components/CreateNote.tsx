@@ -56,7 +56,16 @@ function CreateNote() {
       if (error) throw error;
 
       if (data && data[0]) {
-        const link = `${window.location.origin}/note/${data[0].id}`;
+        // Get the base URL, handling potential Netlify deployments
+        let baseUrl = window.location.origin;
+        
+        // For Netlify deployments, make sure we're using the correct base path
+        if (baseUrl.includes('netlify.app') || baseUrl.includes('netlify.com')) {
+          // Remove any trailing slashes
+          baseUrl = baseUrl.replace(/\/$/, '');
+        }
+        
+        const link = `${baseUrl}/note/${data[0].id}`;
         setNoteLink(link);
       }
     } catch (error) {
