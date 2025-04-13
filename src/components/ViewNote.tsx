@@ -16,6 +16,7 @@ function ViewNote() {
   const [invalidPassword, setInvalidPassword] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
 
   useEffect(() => {
     checkNote();
@@ -23,9 +24,9 @@ function ViewNote() {
 
   // Effect to update the time remaining
   useEffect(() => {
-    if (note?.expires_at) {
+    if (note?.expires_at || expiresAt) {
       const updateTimeLeft = () => {
-        const expiryDate = new Date(note.expires_at);
+        const expiryDate = new Date(note?.expires_at || expiresAt);
         const now = new Date();
         
         if (expiryDate <= now) {
@@ -56,7 +57,7 @@ function ViewNote() {
       
       return () => clearInterval(interval);
     }
-  }, [note, navigate]);
+  }, [note, expiresAt, navigate]);
 
   const checkNote = async () => {
     try {
@@ -82,6 +83,9 @@ function ViewNote() {
         }
         if (!data.password) {
           fetchNote();
+        } else {
+          // For password protected notes, store expiration time separately
+          setExpiresAt(data.expires_at);
         }
       }
     } catch (error) {
@@ -176,9 +180,10 @@ function ViewNote() {
         <Shield className="w-12 h-12 text-blue-600 mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-4">⚠️ Important Warning</h2>
         <p className="text-gray-600 mb-6">
-          This private note can only be viewed once. After viewing, it will be permanently destroyed and cannot be recovered.
-          {note?.expires_at && (
-            <span> This note will automatically expire in {timeLeft}.</span>
+          {(note?.expires_at || expiresAt) ? (
+            <>This private note will expire in {timeLeft}. You can view it now and come back to it until it expires.</>
+          ) : (
+            <>This private note can only be viewed once. After viewing, it will be permanently destroyed and cannot be recovered.</>
           )}
         </p>
         <button
@@ -191,7 +196,7 @@ function ViewNote() {
     );
   }
 
-  if (isPasswordProtected && !note) {
+  if (isPasswordProtected && !note?.content) {
     return (
       <div className="bg-white rounded-lg shadow-xl p-6">
         <div className="flex items-center gap-4 mb-6">
@@ -231,6 +236,20 @@ function ViewNote() {
             View Note
           </button>
         </form>
+
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg text-blue-700 text-sm text-center">
+          {expiresAt ? (
+            <div className="flex items-center justify-center">
+              <Clock className="w-4 h-4 mr-2" />
+              This note will expire in {timeLeft}. You can view it multiple times until then.
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              This note will self-destruct after being viewed once.
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -262,7 +281,7 @@ function ViewNote() {
       {note?.expires_at ? (
         <div className="text-center text-sm bg-blue-50 p-3 rounded-lg text-blue-700 flex items-center justify-center">
           <Clock className="w-4 h-4 inline mr-2" />
-          This note will automatically expire in {timeLeft}.
+          This note will expire in {timeLeft}. You can view it multiple times until then.
         </div>
       ) : (
         <div className="text-center text-sm text-red-500">
