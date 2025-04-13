@@ -1,0 +1,318 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Clock, Send, Copy, Check, AlertCircle, Eye, EyeOff, Timer } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+
+function CreateNote() {
+  const [content, setContent] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [noteLink, setNoteLink] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [expirationOption, setExpirationOption] = useState('after_reading');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if passwords match when password is provided
+    if (password && password !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+    
+    setPasswordError('');
+    setLoading(true);
+
+    // Calculate expiration time based on selected option
+    let expiresAt = null;
+    if (expirationOption === '1_hour') {
+      expiresAt = new Date(new Date().getTime() + 60 * 60 * 1000).toISOString();
+    } else if (expirationOption === '24_hours') {
+      expiresAt = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString();
+    } else if (expirationOption === '7_days') {
+      expiresAt = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (expirationOption === '30_days') {
+      expiresAt = new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert([
+          {
+            content,
+            password: password || null,
+            read: false,
+            expires_at: expiresAt
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      if (data && data[0]) {
+        const link = `${window.location.origin}/note/${data[0].id}`;
+        setNoteLink(link);
+      }
+    } catch (error) {
+      console.error('Error creating note:', error);
+      alert('Failed to create note. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(noteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  // Get expiration message based on the option
+  const getExpirationMessage = () => {
+    switch (expirationOption) {
+      case 'after_reading':
+        return 'This note will self-destruct after being read once';
+      case '1_hour':
+        return 'This note will self-destruct 1 hour after creation';
+      case '24_hours':
+        return 'This note will self-destruct 24 hours after creation';
+      case '7_days':
+        return 'This note will self-destruct 7 days after creation';
+      case '30_days':
+        return 'This note will self-destruct 30 days after creation';
+      default:
+        return 'This note will self-destruct after being read once';
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-xl p-6">
+      <div className="flex items-center gap-4 mb-6">
+        <Shield className="w-6 h-6 text-blue-600" />
+        <h2 className="text-xl font-semibold">Create a Private Note</h2>
+      </div>
+
+      {!noteLink ? (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Write your private note here..."
+              className="w-full h-48 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
+              required
+            />
+          </div>
+
+          {/* Password Protection */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 mb-2">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium">Optional Password Protection</span>
+            </label>
+            
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError('');
+                }}
+                placeholder="Enter a password to encrypt the note"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            
+            {password && (
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  placeholder="Confirm password"
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                  required={!!password}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            )}
+            
+            {passwordError && (
+              <div className="flex items-center gap-2 text-red-500 text-sm">
+                <AlertCircle className="w-4 h-4" />
+                <span>{passwordError}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Expiration Options */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 mb-2">
+              <Timer className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium">Self-Destruct Timer</span>
+            </label>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label className={`flex items-center p-3 rounded-lg border ${expirationOption === 'after_reading' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
+                <input
+                  type="radio"
+                  name="expiration"
+                  value="after_reading"
+                  checked={expirationOption === 'after_reading'}
+                  onChange={() => setExpirationOption('after_reading')}
+                  className="sr-only"
+                />
+                <div className="ml-2">
+                  <span className="block text-sm font-medium text-gray-900">After reading</span>
+                  <span className="block text-xs text-gray-500">Destroys once read</span>
+                </div>
+              </label>
+              
+              <label className={`flex items-center p-3 rounded-lg border ${expirationOption === '1_hour' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
+                <input
+                  type="radio"
+                  name="expiration"
+                  value="1_hour"
+                  checked={expirationOption === '1_hour'}
+                  onChange={() => setExpirationOption('1_hour')}
+                  className="sr-only"
+                />
+                <div className="ml-2">
+                  <span className="block text-sm font-medium text-gray-900">1 hour</span>
+                  <span className="block text-xs text-gray-500">Destroys after 1 hour</span>
+                </div>
+              </label>
+              
+              <label className={`flex items-center p-3 rounded-lg border ${expirationOption === '24_hours' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
+                <input
+                  type="radio"
+                  name="expiration"
+                  value="24_hours"
+                  checked={expirationOption === '24_hours'}
+                  onChange={() => setExpirationOption('24_hours')}
+                  className="sr-only"
+                />
+                <div className="ml-2">
+                  <span className="block text-sm font-medium text-gray-900">24 hours</span>
+                  <span className="block text-xs text-gray-500">Destroys after 24 hours</span>
+                </div>
+              </label>
+              
+              <label className={`flex items-center p-3 rounded-lg border ${expirationOption === '7_days' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
+                <input
+                  type="radio"
+                  name="expiration"
+                  value="7_days"
+                  checked={expirationOption === '7_days'}
+                  onChange={() => setExpirationOption('7_days')}
+                  className="sr-only"
+                />
+                <div className="ml-2">
+                  <span className="block text-sm font-medium text-gray-900">7 days</span>
+                  <span className="block text-xs text-gray-500">Destroys after 7 days</span>
+                </div>
+              </label>
+              
+              <label className={`flex items-center p-3 rounded-lg border ${expirationOption === '30_days' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
+                <input
+                  type="radio"
+                  name="expiration"
+                  value="30_days"
+                  checked={expirationOption === '30_days'}
+                  onChange={() => setExpirationOption('30_days')}
+                  className="sr-only"
+                />
+                <div className="ml-2">
+                  <span className="block text-sm font-medium text-gray-900">30 days</span>
+                  <span className="block text-xs text-gray-500">Destroys after 30 days</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || content.length === 0 || (password.length > 0 && !confirmPassword)}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-4 h-4" />
+            {loading ? 'Creating...' : 'Create Private Note'}
+          </button>
+        </form>
+      ) : (
+        <div className="space-y-6">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Share this private link with the recipient:</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={noteLink}
+                readOnly
+                className="w-full px-4 py-2 bg-gray-100 rounded-lg text-gray-900"
+              />
+              <button
+                onClick={copyToClipboard}
+                className="flex items-center justify-center p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="text-center text-sm text-gray-600">
+            <p className="mb-2">⚠️ Important:</p>
+            <ul className="space-y-1">
+              <li>• {getExpirationMessage()}</li>
+              <li>• The link can only be used once</li>
+              <li>• After viewing, the note cannot be recovered</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => {
+              setNoteLink('');
+              setContent('');
+              setPassword('');
+              setConfirmPassword('');
+              setPasswordError('');
+              setExpirationOption('after_reading');
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            <Shield className="w-4 h-4" />
+            Create Another Note
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default CreateNote;
