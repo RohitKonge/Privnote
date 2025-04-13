@@ -60,7 +60,7 @@ function CreateNote() {
         let baseUrl = window.location.origin;
         
         // For Netlify deployments, make sure we're using the correct base path
-        if (baseUrl.includes('netlify.app') || baseUrl.includes('netlify.com')) {
+        if (baseUrl.includes('netlify.app') || baseUrl.includes('netlify.com') || baseUrl.includes('privnote.tech')) {
           // Remove any trailing slashes
           baseUrl = baseUrl.replace(/\/$/, '');
         }
