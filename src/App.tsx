@@ -37,10 +37,12 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 text-gray-900 flex flex-col">
         <RouteTitle />
-        <header className="py-6 px-4 border-b border-gray-200">
-          <div className="max-w-4xl mx-auto flex items-center justify-between w-full">
+        
+        {/* Semantic header with nav */}
+        <header className="py-6 px-4 border-b border-gray-200" role="banner">
+          <nav className="max-w-4xl mx-auto flex items-center justify-between w-full" role="navigation" aria-label="Main navigation">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Lock className="w-8 h-8 text-blue-600" />
+              <Lock className="w-8 h-8 text-blue-600" aria-hidden="true" />
               <h1 className="text-2xl font-bold">Privnote</h1>
             </Link>
             <button 
@@ -48,12 +50,13 @@ function App() {
               className="flex items-center justify-center w-8 h-8 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
               aria-label="Information about Privnote"
             >
-              <Info className="w-5 h-5" />
+              <Info className="w-5 h-5" aria-hidden="true" />
             </button>
-          </div>
+          </nav>
         </header>
         
-        <main className="w-full px-4 py-8">
+        {/* Main content area with ARIA landmarks */}
+        <main className="w-full px-4 py-8" role="main">
           <div className="max-w-4xl mx-auto">
             <Routes>
               <Route path="/" element={<CreateNote />} />
@@ -63,11 +66,12 @@ function App() {
           </div>
         </main>
 
-        <footer className="w-full px-4 py-6 mt-auto border-t border-gray-200">
+        {/* Semantic footer with sitemap links */}
+        <footer className="w-full px-4 py-6 mt-auto border-t border-gray-200" role="contentinfo">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4">
               <p className="text-gray-500 text-sm">© Privnote 2015 - 2025</p>
-              <div className="flex items-center gap-6">
+              <nav className="flex items-center gap-6" aria-label="Footer navigation">
                 <button 
                   onClick={() => setShowPrivacyModal(true)}
                   className="text-blue-600 hover:text-blue-800 text-sm"
@@ -86,7 +90,7 @@ function App() {
                 >
                   About
                 </button>
-              </div>
+              </nav>
             </div>
             <p className="text-gray-500 text-sm mt-4 text-center">Send private, self-destructing notes with confidence.</p>
           </div>

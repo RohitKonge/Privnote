@@ -1,0 +1,16 @@
+# https://privnote.tech robots.txt
+User-agent: *
+Allow: /$
+Allow: /about$
+Allow: /faq$
+Allow: /privacy$
+Disallow: /note/
+Disallow: /destroyed
+Disallow: /api/
+Disallow: /*.json$
+
+# Sitemap
+Sitemap: https://privnote.tech/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10

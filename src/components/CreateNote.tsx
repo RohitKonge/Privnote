@@ -105,33 +105,38 @@ function CreateNote() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl p-6">
+    <article className="bg-white rounded-lg shadow-xl p-6">
       <div className="flex items-center gap-4 mb-6">
-        <Shield className="w-6 h-6 text-blue-600" />
+        <Shield className="w-6 h-6 text-blue-600" aria-hidden="true" />
         <h2 className="text-xl font-semibold">Create a Private Note</h2>
       </div>
 
       {!noteLink ? (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" aria-label="Create private note form">
           <div>
+            <label htmlFor="noteContent" className="sr-only">Note Content</label>
             <textarea
+              id="noteContent"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your private note here..."
               className="w-full h-48 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
               required
+              aria-label="Note content"
             />
           </div>
 
-          {/* Password Protection */}
-          <div className="space-y-4">
-            <label className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-blue-600" />
+          {/* Password Protection Section */}
+          <section className="space-y-4" aria-labelledby="password-protection">
+            <div className="flex items-center gap-2 mb-2" id="password-protection">
+              <Clock className="w-4 h-4 text-blue-600" aria-hidden="true" />
               <span className="text-sm font-medium">Optional Password Protection</span>
-            </label>
+            </div>
             
             <div className="relative">
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
+                id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => {
@@ -140,19 +145,23 @@ function CreateNote() {
                 }}
                 placeholder="Enter a password to encrypt the note"
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                aria-label="Password for note encryption"
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
               </button>
             </div>
             
             {password && (
               <div className="relative">
+                <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
                 <input
+                  id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => {
@@ -162,13 +171,15 @@ function CreateNote() {
                   placeholder="Confirm password"
                   className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
                   required={!!password}
+                  aria-label="Confirm password"
                 />
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirmPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                 </button>
               </div>
             )}
@@ -179,16 +190,16 @@ function CreateNote() {
                 <span>{passwordError}</span>
               </div>
             )}
-          </div>
+          </section>
 
-          {/* Expiration Options */}
-          <div className="space-y-4">
-            <label className="flex items-center gap-2 mb-2">
-              <Timer className="w-4 h-4 text-blue-600" />
+          {/* Expiration Options Section */}
+          <section className="space-y-4" aria-labelledby="expiration-options">
+            <div className="flex items-center gap-2 mb-2" id="expiration-options">
+              <Timer className="w-4 h-4 text-blue-600" aria-hidden="true" />
               <span className="text-sm font-medium">Self-Destruct Timer</span>
-            </label>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3" role="radiogroup" aria-label="Note expiration options">
               <label className={`flex items-center p-3 rounded-lg border ${expirationOption === 'after_reading' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}>
                 <input
                   type="radio"
@@ -264,19 +275,20 @@ function CreateNote() {
                 </div>
               </label>
             </div>
-          </div>
+          </section>
 
           <button
             type="submit"
             disabled={loading || content.length === 0 || (password.length > 0 && !confirmPassword)}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={loading ? 'Creating note...' : 'Create private note'}
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
             {loading ? 'Creating...' : 'Create Private Note'}
           </button>
         </form>
       ) : (
-        <div className="space-y-6">
+        <section className="space-y-6" aria-label="Note created successfully">
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600 mb-2">Share this private link with the recipient:</p>
             <div className="flex items-center gap-2">
@@ -285,17 +297,19 @@ function CreateNote() {
                 value={noteLink}
                 readOnly
                 className="w-full px-4 py-2 bg-gray-100 rounded-lg text-gray-900"
+                aria-label="Generated private note link"
               />
               <button
                 onClick={copyToClipboard}
                 className="flex items-center justify-center p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                aria-label={copied ? 'Link copied' : 'Copy link to clipboard'}
               >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
               </button>
             </div>
           </div>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-gray-600" role="alert">
             <p className="mb-2">⚠️ Important:</p>
             <ul className="space-y-1">
               <li>• {getExpirationMessage()}</li>
@@ -314,13 +328,14 @@ function CreateNote() {
               setExpirationOption('after_reading');
             }}
             className="w-full flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
+            aria-label="Create another note"
           >
-            <Shield className="w-4 h-4" />
+            <Shield className="w-4 h-4" aria-hidden="true" />
             Create Another Note
           </button>
-        </div>
+        </section>
       )}
-    </div>
+    </article>
   );
 }
 

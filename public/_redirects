@@ -1,1 +1,12 @@
+# Redirect domain aliases to primary domain
+https://www.privnote.tech/* https://privnote.tech/:splat 301!
+
+# Optional: Redirect HTTP to HTTPS
+http://privnote.tech/* https://privnote.tech/:splat 301!
+http://www.privnote.tech/* https://privnote.tech/:splat 301!
+
+# Handle trailing slashes
+/*/ /:splat 301
+
+# SPA fallback
 /* /index.html 200
