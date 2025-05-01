@@ -1,6 +1,6 @@
 # https://privnote.tech robots.txt
 User-agent: *
-Allow: /$
+Allow: /
 Allow: /about$
 Allow: /faq$
 Allow: /privacy$
